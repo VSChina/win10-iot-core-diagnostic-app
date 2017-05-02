@@ -6,3 +6,5 @@ AppPackages/
 *.user
 project.lock.json
 BundleArtifacts/
+Debug/
+Release/

@@ -8,12 +8,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.Devices.Gpio;
 
 namespace Win10IoTCoreDiagnosticApp
 {
     public sealed partial class MainPage : Page
     {
-        private const string DeviceConnectionString = "HostName=RentuIoTHub.azure-devices.net;DeviceId=csharpsdk;SharedAccessKey=fsFw7xcuIVdJ79d09rzVPQ0SMv5k5fq1/ZlrsRUIQTc=";
+        private const string DeviceConnectionString = "HostName=erich-iothub1.azure-devices.net;DeviceId=d1;SharedAccessKey=sE2LiGxD9ekXNAs7tPZqRts5Jd0j00Qd6OKOBfeQnAg=";
         private CancellationTokenSource _tokenSource;
         private readonly ContinuousDiagnosticProvider _diagnosticProvider;
         private readonly DeviceClientWrapper _deviceClient;
@@ -24,7 +25,7 @@ namespace Win10IoTCoreDiagnosticApp
             StartBtn.IsEnabled = true;
             StopBtn.IsEnabled = false;
             HelloMessage.Text = "Click button to send Diagnostic messages";
-            _diagnosticProvider = new ContinuousDiagnosticProvider(SamplingRateSource.Client, 25);
+            _diagnosticProvider = new ContinuousDiagnosticProvider(SamplingRateSource.Client, 100);
             _deviceClient = DeviceClientWrapper.CreateFromConnectionString(DeviceConnectionString, _diagnosticProvider);
         }
 
@@ -33,7 +34,8 @@ namespace Win10IoTCoreDiagnosticApp
             HelloMessage.Text = "Start send D2C Message...";
             StartBtn.IsEnabled = false;
             StopBtn.IsEnabled = true;
-            await SendD2CMessage();
+            //await SendD2CMessage();
+            DHT22.Start(HelloMessage);
         }
 
         private void StopD2CMessageClick(object sender, RoutedEventArgs e)
