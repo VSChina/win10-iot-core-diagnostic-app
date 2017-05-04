@@ -20,7 +20,7 @@
     <PackageCertificateKeyFile>Win10IoTCoreDiagnosticApp_TemporaryKey.pfx</PackageCertificateKeyFile>
     <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
     <AppxBundle>Always</AppxBundle>
-    <AppxBundlePlatforms>x86|x64|arm</AppxBundlePlatforms>
+    <AppxBundlePlatforms>arm</AppxBundlePlatforms>
     <AppxPackageDir>C:\IoT\MyCode\Win10IoTCoreDiagnosticApp\Win10IoTCoreDiagnosticApp\AppPackages\</AppxPackageDir>
     <PackageCertificateThumbprint>2F7F16C5E420FA038D01E1D6B97778BAB181E8B4</PackageCertificateThumbprint>
   </PropertyGroup>

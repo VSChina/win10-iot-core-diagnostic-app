@@ -10,6 +10,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.Devices.Gpio;
 using Sensors.Dht;
+using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 
 namespace Win10IoTCoreDiagnosticApp
 {
@@ -17,8 +18,8 @@ namespace Win10IoTCoreDiagnosticApp
     {
         private const string DeviceConnectionString = "HostName=erich-iothub1.azure-devices.net;DeviceId=d1;SharedAccessKey=ChraBvdqFY1fp2br6+sfGcOj9M2qcvOJhn/wCyHc62A=";
         private CancellationTokenSource _tokenSource;
-        private readonly ContinuousDiagnosticProvider _diagnosticProvider;
-        private readonly DeviceClientWrapper _deviceClient;
+        private ContinuousDiagnosticProvider _diagnosticProvider;
+        private DeviceClientWrapper _deviceClient;
         private DispatcherTimer _timer = new DispatcherTimer();
         private Dht22 _dht;
         private GpioPin _pin;
@@ -26,6 +27,7 @@ namespace Win10IoTCoreDiagnosticApp
         private float _lastTemperature;
         private float _lastHumidity;
         private bool _hasLastValue = false;
+        private long  waitForWifi = 15;
 
         public MainPage()
         {
@@ -34,13 +36,11 @@ namespace Win10IoTCoreDiagnosticApp
             StopBtn.IsEnabled = false;
             HelloMessage.Text = "Click button to send Diagnostic messages";
 
-            _diagnosticProvider = new ContinuousDiagnosticProvider(SamplingRateSource.Server, 10);
-            _deviceClient = DeviceClientWrapper.CreateFromConnectionString(DeviceConnectionString, _diagnosticProvider);
 
             _timer.Interval = TimeSpan.FromSeconds(2);
             _timer.Tick += OnTimerTick;
 
-            HelloMessage.Text = "Start send D2C Message...";
+            HelloMessage.Text = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ") + " Start send D2C Message...";
             StartBtn.IsEnabled = false;
             StopBtn.IsEnabled = true;
 
@@ -56,6 +56,20 @@ namespace Win10IoTCoreDiagnosticApp
 
         private async void OnTimerTick(object sender, object e)
         {
+            if (--waitForWifi >= 0)
+                return;
+
+            if(_diagnosticProvider == null)
+            {
+                var mqttTcpOnly = new MqttTransportSettings(TransportType.Mqtt_Tcp_Only);
+                var mqttWebSocketOnly = new MqttTransportSettings(TransportType.Mqtt_WebSocket_Only);
+                mqttTcpOnly.KeepAliveInSeconds = 4;
+                mqttWebSocketOnly.KeepAliveInSeconds = 4;
+                _diagnosticProvider = new ContinuousDiagnosticProvider(SamplingRateSource.Server, 10);
+                //_deviceClient = DeviceClientWrapper.CreateFromConnectionString(DeviceConnectionString, _diagnosticProvider);
+                _deviceClient = DeviceClientWrapper.CreateFromConnectionString(DeviceConnectionString, new[] { mqttTcpOnly, mqttWebSocketOnly }, _diagnosticProvider);
+            }
+
             DhtReading reading = new DhtReading();
 
             reading = await _dht.GetReadingAsync().AsTask();
